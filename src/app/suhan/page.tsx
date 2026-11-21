@@ -109,7 +109,7 @@ export default function SuhanDashboard() {
 
     return () => {
       clearTimeout(timer);
-      supabase.removeChannel(channel);
+      supabase?.removeChannel(channel);
     };
   }, [loadImages]);
 
