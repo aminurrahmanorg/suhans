@@ -76,10 +76,6 @@ function pad(n: number): string {
   return String(n).padStart(2, "0");
 }
 
-function dur(base: number): number {
-  return base * (animationSpeed ?? 1);
-}
-
 export default function Hero() {
   const prefersReduced = useReducedMotion();
   const [items, setItems] = useState<GalleryItem[]>(heroImages);
@@ -158,6 +154,22 @@ function HeroGallery({
   const [rawCurrent, setRawCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile viewport to tune animation speed
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Mobile speed multiplier: 40% faster on mobile for snappy responsiveness
+  const speedMultiplier = isMobile ? 0.6 : 1;
+  const dur = useCallback(
+    (base: number) => base * (animationSpeed ?? 1) * speedMultiplier,
+    [speedMultiplier]
+  );
 
   // Ensure current is always within bounds if items change dynamically
   const current = rawCurrent >= total ? 0 : rawCurrent;
@@ -198,7 +210,7 @@ function HeroGallery({
         setAnimating(false);
       }, dur(prefersReduced ? 50 : 600));
     },
-    [animating, current, prefersReduced]
+    [animating, current, prefersReduced, dur]
   );
 
   // Keyboard navigation

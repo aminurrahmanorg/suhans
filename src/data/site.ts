@@ -89,8 +89,8 @@ export const heroImages: { src: string; title: string; caption: string }[] = [
 // Set the array to [] to hide the icons entirely.
 // ------------------------------------------------------------------
 export const links: { platform: string; href: string }[] = [
-  { platform: "instagram", href: "https://instagram.com/yourhandle" },
-  { platform: "linkedin", href: "https://linkedin.com/in/yourhandle" },
+  { platform: "instagram", href: "https://www.facebook.com/profile.php?id=100082093456990" },
+  { platform: "linkedin", href: "https://www.facebook.com/profile.php?id=100082093456990" },
   { platform: "email", href: "mailto:arsuhan677@gmail.com" },
 ];
 
