@@ -212,20 +212,32 @@ function HeroGallery({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [current, total, goTo]);
 
-  // Mobile swipe support
+  // Mobile swipe support (swipe left -> next, swipe right -> previous)
   const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
 
   function handleTouchStart(e: React.TouchEvent) {
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
   }
 
   function handleTouchEnd(e: React.TouchEvent) {
-    if (touchStartX.current === null) return;
-    const delta = touchStartX.current - e.changedTouches[0].clientX;
-    if (delta > 50) {
-      goTo(wrap(current + 1, total));
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const deltaX = touchStartX.current - e.changedTouches[0].clientX;
+    const deltaY = touchStartY.current - e.changedTouches[0].clientY;
+
+    // Only trigger if horizontal swipe is dominant and > 40px
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
+      if (deltaX > 0) {
+        // Swipe left -> Next
+        goTo(wrap(current + 1, total));
+      } else {
+        // Swipe right -> Previous
+        goTo(wrap(current - 1, total));
+      }
     }
     touchStartX.current = null;
+    touchStartY.current = null;
   }
 
   const easeInOut = "easeInOut" as const;
@@ -275,7 +287,7 @@ function HeroGallery({
 
   return (
     <section
-      className="relative w-full h-screen overflow-hidden select-none bg-black text-white"
+      className="relative w-full h-[100dvh] overflow-hidden select-none bg-black text-white"
       aria-label="Image gallery hero"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -327,13 +339,13 @@ function HeroGallery({
       {/* =====================================================
           2. TOP BAR: LOGO (left) + SOCIAL LINKS (right)
          ===================================================== */}
-      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-6 py-6 sm:px-12 sm:py-8">
-        <span className="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-md">
+      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 py-4 sm:px-12 sm:py-8">
+        <span className="text-lg sm:text-2xl font-bold tracking-tight text-white drop-shadow-md">
           {siteConfig.logoText}
         </span>
 
         {links && links.length > 0 && (
-          <nav aria-label="Social links" className="flex items-center gap-4">
+          <nav aria-label="Social links" className="flex items-center gap-3 sm:gap-4">
             {links.map(({ platform, href }) => (
               <a
                 key={platform}
@@ -341,7 +353,7 @@ function HeroGallery({
                 target={platform.toLowerCase() === "email" ? undefined : "_blank"}
                 rel="noopener noreferrer"
                 aria-label={`${platform} link`}
-                className="text-white/75 hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-md p-1"
+                className="text-white/80 hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-md p-1"
               >
                 <SocialIcon platform={platform} />
               </a>
@@ -353,15 +365,15 @@ function HeroGallery({
       {/* =====================================================
           3. BOTTOM BAR: COUNTER + TITLE + CARDS
          ===================================================== */}
-      <footer className="absolute bottom-0 left-0 right-0 z-20 flex flex-row items-end justify-between gap-4 px-6 pb-8 sm:px-12 sm:pb-12">
+      <footer className="absolute bottom-0 left-0 right-0 z-20 flex flex-row items-end justify-between gap-3 sm:gap-6 px-4 pb-6 sm:px-12 sm:pb-12">
         {/* Bottom Left: Counter, Title & Caption */}
-        <div className="flex flex-col gap-3 max-w-[60%] sm:max-w-[50%]">
+        <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-w-0 pr-1 sm:pr-3">
           {/* Counter pill */}
           <div
-            className="inline-flex items-center self-start px-3.5 py-1 rounded-full text-xs font-semibold tracking-wider text-white border backdrop-blur-sm"
+            className="inline-flex items-center self-start px-2.5 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-semibold tracking-wider text-white border backdrop-blur-sm shadow-sm"
             style={{
               borderColor: "var(--accent)",
-              backgroundColor: "rgba(0, 0, 0, 0.4)",
+              backgroundColor: "rgba(0, 0, 0, 0.45)",
             }}
           >
             {pad(current + 1)} / {pad(total)}
@@ -375,27 +387,29 @@ function HeroGallery({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="flex flex-col gap-1.5"
+              className="flex flex-col gap-1 sm:gap-1.5"
             >
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight drop-shadow-lg">
+              <h1 className="text-2xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight drop-shadow-lg break-words line-clamp-2 sm:line-clamp-none">
                 {activeImage.title}
               </h1>
-              <p className="text-sm sm:text-base text-white/80 font-normal drop-shadow">
-                {activeImage.caption}
-              </p>
+              {activeImage.caption && (
+                <p className="text-xs sm:text-base text-white/80 font-normal drop-shadow line-clamp-2 sm:line-clamp-none">
+                  {activeImage.caption}
+                </p>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Bottom Right: Preview Cards (No Hover effect) */}
-        <div className="flex flex-col items-end gap-2">
+        {/* Bottom Right: Preview Cards */}
+        <div className="flex flex-col items-end gap-1.5 sm:gap-2 shrink-0">
           {hiddenCount > 0 && (
-            <span className="text-white/60 text-xs font-medium tracking-wide select-none">
+            <span className="text-white/60 text-[10px] sm:text-xs font-medium tracking-wide select-none">
               +{hiddenCount} more
             </span>
           )}
 
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <AnimatePresence mode="popLayout">
               {cardIndices.map((imgIndex, slot) => {
                 const preview = items[imgIndex];
@@ -408,7 +422,11 @@ function HeroGallery({
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="relative"
+                    // On extra-small screens, show 1 preview card so it never squishes the title. On sm+ show both!
+                    className={cn(
+                      "relative",
+                      slot > 0 ? "hidden sm:block" : "block"
+                    )}
                   >
                     <button
                       type="button"
@@ -421,11 +439,11 @@ function HeroGallery({
                       disabled={animating}
                       aria-label={`Show image ${imgIndex + 1}: ${preview.title}`}
                       className={cn(
-                        "relative overflow-hidden rounded-xl cursor-pointer block",
-                        "w-[130px] h-[88px] sm:w-[185px] sm:h-[120px]",
+                        "relative overflow-hidden rounded-lg sm:rounded-xl cursor-pointer block active:scale-95",
+                        "w-[105px] h-[72px] sm:w-[185px] sm:h-[120px]",
                         "border border-white/60 focus-visible:border-[var(--accent)]",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                        "shadow-2xl bg-neutral-900",
+                        "shadow-2xl bg-neutral-900 transition-transform duration-150",
                         animating ? "cursor-wait opacity-80" : ""
                       )}
                     >
@@ -447,7 +465,7 @@ function HeroGallery({
                             alt={preview.title}
                             fill
                             quality={90}
-                            sizes="(max-width: 640px) 130px, 185px"
+                            sizes="(max-width: 640px) 105px, 185px"
                             className="object-cover object-center select-none"
                             onError={() => {
                               console.warn(`[Hero] Failed to load image: ${preview.src}`);
@@ -457,7 +475,7 @@ function HeroGallery({
                         )}
 
                         {/* Light bottom gradient for legibility */}
-                        <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
+                        <div className="absolute inset-x-0 bottom-0 h-10 sm:h-14 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
                       </motion.div>
                     </button>
                   </motion.div>
