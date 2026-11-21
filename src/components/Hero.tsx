@@ -164,8 +164,8 @@ function HeroGallery({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Mobile speed multiplier: 40% faster on mobile for snappy responsiveness
-  const speedMultiplier = isMobile ? 0.6 : 1;
+  // Mobile speed multiplier: 50% faster on mobile for instant, snappy responsiveness
+  const speedMultiplier = isMobile ? 0.5 : 1;
   const dur = useCallback(
     (base: number) => base * (animationSpeed ?? 1) * speedMultiplier,
     [speedMultiplier]
