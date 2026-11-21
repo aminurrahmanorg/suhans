@@ -293,7 +293,7 @@ function HeroGallery({
       onTouchEnd={handleTouchEnd}
     >
       {/* =====================================================
-          1. HERO BACKGROUND IMAGE (Full-Screen HD)
+          1. HERO BACKGROUND IMAGE (Responsive Full-View Display)
          ===================================================== */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-black">
         <motion.div
@@ -310,27 +310,43 @@ function HeroGallery({
               <span className="text-white/40 text-sm">Image not available</span>
             </div>
           ) : (
-            <Image
-              src={activeImage.src}
-              alt={activeImage.title}
-              fill
-              priority={current === 0}
-              quality={100}
-              sizes="100vw"
-              className="object-cover object-center pointer-events-none select-none"
-              onError={() => {
-                console.warn(`[Hero] Failed to load image: ${activeImage.src}`);
-                setFailedImages((prev) => ({ ...prev, [activeImage.src]: true }));
-              }}
-            />
+            <>
+              {/* Ambient colorful backdrop on mobile so landscape photos feel immersive */}
+              <Image
+                src={activeImage.src}
+                alt=""
+                fill
+                priority={current === 0}
+                quality={40}
+                className="object-cover object-center blur-3xl opacity-40 scale-110 pointer-events-none select-none sm:hidden"
+              />
+
+              {/* Main HD Image:
+                  - Mobile: object-contain displays the full photo without cutting people off
+                  - Desktop: sm:object-cover fills the widescreen monitor edge-to-edge
+              */}
+              <Image
+                src={activeImage.src}
+                alt={activeImage.title}
+                fill
+                priority={current === 0}
+                quality={100}
+                sizes="100vw"
+                className="object-contain sm:object-cover object-center pointer-events-none select-none drop-shadow-2xl transition-all duration-300"
+                onError={() => {
+                  console.warn(`[Hero] Failed to load image: ${activeImage.src}`);
+                  setFailedImages((prev) => ({ ...prev, [activeImage.src]: true }));
+                }}
+              />
+            </>
           )}
 
-          {/* Smooth subtle vignette overlay so titles and navigation remain crisp and readable */}
+          {/* Vignette overlay */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.65) 100%)",
+                "linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.05) 25%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.7) 100%)",
             }}
           />
         </motion.div>
@@ -339,7 +355,7 @@ function HeroGallery({
       {/* =====================================================
           2. TOP BAR: LOGO (left) + SOCIAL LINKS (right)
          ===================================================== */}
-      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 py-4 sm:px-12 sm:py-8">
+      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 py-5 sm:px-12 sm:py-8 bg-gradient-to-b from-black/75 via-black/30 to-transparent">
         <span className="text-lg sm:text-2xl font-bold tracking-tight text-white drop-shadow-md">
           {siteConfig.logoText}
         </span>
@@ -365,7 +381,7 @@ function HeroGallery({
       {/* =====================================================
           3. BOTTOM BAR: COUNTER + TITLE + CARDS
          ===================================================== */}
-      <footer className="absolute bottom-0 left-0 right-0 z-20 flex flex-row items-end justify-between gap-3 sm:gap-6 px-4 pb-6 sm:px-12 sm:pb-12">
+      <footer className="absolute bottom-0 left-0 right-0 z-20 flex flex-row items-end justify-between gap-3 sm:gap-6 px-4 pb-6 pt-16 sm:px-12 sm:pb-12 bg-gradient-to-t from-black/90 via-black/45 to-transparent">
         {/* Bottom Left: Counter, Title & Caption */}
         <div className="flex flex-col gap-2 sm:gap-3 flex-1 min-w-0 pr-1 sm:pr-3">
           {/* Counter pill */}
